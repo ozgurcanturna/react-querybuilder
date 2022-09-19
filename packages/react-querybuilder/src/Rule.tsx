@@ -25,6 +25,7 @@ export const Rule = ({
   dropMonitorId = '',
   dndRef = null,
   dragRef = null,
+  compact = false,
 }: RuleProps) => {
   const {
     classNames,
@@ -150,6 +151,7 @@ export const Rule = ({
   );
 
   return (
+    
     <div
       ref={dndRef}
       data-testid={TestID.rule}
@@ -158,7 +160,8 @@ export const Rule = ({
       className={outerClassName}
       data-rule-id={id}
       data-level={level}
-      data-path={JSON.stringify(path)}>
+      data-path={JSON.stringify(path)}
+      style={compact ? {display:'flex',width:'auto'}:{}}>
       <DragHandleControlElement
         testID={TestID.dragHandle}
         ref={dragRef}
@@ -170,7 +173,7 @@ export const Rule = ({
         disabled={disabled}
         context={context}
         validation={validationResult}
-      />
+      />{!compact &&
       <FieldSelectorControlElement
         testID={TestID.fields}
         options={fields}
@@ -184,10 +187,10 @@ export const Rule = ({
         disabled={disabled}
         context={context}
         validation={validationResult}
-      />
+      />}
       {(autoSelectField || field !== translations.fields.placeholderName) && (
         <>
-          <OperatorSelectorControlElement
+         {!compact && <OperatorSelectorControlElement
             testID={TestID.operators}
             field={field}
             fieldData={fieldData}
@@ -201,7 +204,7 @@ export const Rule = ({
             disabled={disabled}
             context={context}
             validation={validationResult}
-          />
+          />}
           {(autoSelectOperator || operator !== translations.operators.placeholderName) && (
             <>
               {!['null', 'notNull'].includes(operator) && valueSources.length > 1 && (
@@ -287,6 +290,7 @@ export const Rule = ({
         validation={validationResult}
       />
     </div>
+  
   );
 };
 

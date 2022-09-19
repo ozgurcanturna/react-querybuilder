@@ -300,6 +300,8 @@ export const RuleGroup = ({
             (typeof r !== 'string' && r.disabled) ||
             disabledPaths.some(p => pathsAreEqual(thisPath, p));
           const key = thisPath.join('-');
+          const prevR = (idx > 0 && idx < rules.length-1 ) ? rules[idx - 1] : undefined;
+
           return (
             <Fragment key={key}>
               {idx > 0 && !independentCombinators && showCombinatorsBetweenRules && (
@@ -365,6 +367,11 @@ export const RuleGroup = ({
                   parentDisabled={parentDisabled || disabled}
                   translations={translations}
                   context={context}
+                  compact={
+                    typeof prevR ==='string' || prevR == undefined ? false :
+                    'rules' in prevR  ? false :
+                    prevR.field === r.field && prevR.operator === r.operator 
+                  }
                 />
               )}
             </Fragment>
