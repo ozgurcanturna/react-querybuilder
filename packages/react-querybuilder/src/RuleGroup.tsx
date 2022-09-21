@@ -163,6 +163,230 @@ export const RuleGroup = ({
     validationClassName
   );
 
+  const compactInfo = [] as string[];
+  rules.forEach((r, idx) => {
+    const prevR = idx > 0 && idx < rules.length - 1 ? rules[idx - 1] : undefined;
+    //is the idx indexed element is compact ?
+    const compact =
+      typeof prevR === 'string' || prevR == undefined
+        ? false
+        : 'rules' in prevR
+        ? false
+        : typeof r !== 'string' &&
+          !('rules' in r) &&
+          prevR.field === r.field &&
+          prevR.operator === r.operator;
+    if (!compact) {
+      if (compactInfo.length > 0 && compactInfo[compactInfo.length - 1] === 'compact')
+        compactInfo.push('end');
+      else compactInfo.push('normal');
+    } else if (compact) {
+      if (compactInfo.at(compactInfo.length - 1) === 'normal')
+        compactInfo[compactInfo.length - 1] = 'start';
+      compactInfo.push('compact');
+    }
+  });
+
+  const sliceRules = () => {
+    let normalStart = 0;
+    let compactStart = Number.MAX_VALUE;
+    const slices = [];
+
+    for (let index = 0; index < compactInfo.length; index++) {
+      if (compactInfo[index] === 'start') {
+        slices.push({ start: normalStart, end: index, type: 'normal' });
+        compactStart = index;
+        normalStart = Number.MAX_VALUE;
+      } else if (compactInfo[index] === 'end') {
+        slices.push({ start: compactStart, end: index, type: 'compact' });
+        normalStart = index;
+        compactStart = Number.MAX_VALUE;
+      }
+    }
+    if (normalStart < compactInfo.length)
+      slices.push({ start: normalStart, end: compactInfo.length, type: 'normal' });
+    console.log(slices);
+    return (
+      <>
+        {slices.map(slice => {
+          return slice.type === 'normal'
+            ? normalSlice(slice.start, slice.end)
+            : compactSlice(slice.start, slice.end);
+        })}
+      </>
+    );
+  };
+
+  const normalSlice = (start: number, end: number) => {
+    console.log('normalSlice', start, end);
+    return rules.slice(start, end).map((r, idx) => {
+      const thisPath = [...path, start + idx];
+      const thisPathDisabled =
+        disabled ||
+        (typeof r !== 'string' && r.disabled) ||
+        disabledPaths.some(p => pathsAreEqual(thisPath, p));
+      const key = thisPath.join('-');
+      return (
+        <Fragment key={key}>
+          {idx > 0 && !independentCombinators && showCombinatorsBetweenRules && (
+            <InlineCombinatorControlElement
+              options={combinators}
+              value={combinator}
+              title={translations.combinators.title}
+              className={classNamesMemo.combinators}
+              handleOnChange={onCombinatorChange}
+              rules={rules}
+              level={level}
+              context={context}
+              validation={validationResult}
+              component={CombinatorSelectorControlElement}
+              path={thisPath}
+              disabled={thisPathDisabled}
+              independentCombinators={independentCombinators}
+            />
+          )}
+          {typeof r === 'string' ? (
+            <InlineCombinatorControlElement
+              options={combinators}
+              value={r}
+              title={translations.combinators.title}
+              className={classNamesMemo.combinators}
+              handleOnChange={val => onIndependentCombinatorChange(val, idx)}
+              rules={rules}
+              level={level}
+              context={context}
+              validation={validationResult}
+              component={CombinatorSelectorControlElement}
+              path={thisPath}
+              disabled={thisPathDisabled}
+              independentCombinators={independentCombinators}
+            />
+          ) : 'rules' in r ? (
+            <RuleGroupControlElement
+              id={r.id}
+              schema={schema}
+              actions={actions}
+              path={thisPath}
+              translations={translations}
+              ruleGroup={r}
+              rules={r.rules}
+              combinator={'combinator' in r ? r.combinator : undefined}
+              not={!!r.not}
+              disabled={thisPathDisabled}
+              parentDisabled={parentDisabled || disabled}
+              context={context}
+            />
+          ) : (
+            <RuleControlElement
+              id={r.id!}
+              rule={r}
+              field={r.field}
+              operator={r.operator}
+              value={r.value}
+              valueSource={r.valueSource}
+              schema={schema}
+              actions={actions}
+              path={thisPath}
+              disabled={thisPathDisabled}
+              parentDisabled={parentDisabled || disabled}
+              translations={translations}
+              context={context}
+              compact={false}
+            />
+          )}
+        </Fragment>
+      );
+    });
+  };
+
+  const compactSlice = (start: number, end: number) => {
+    console.log(`CompactSlice: ${start} - ${end}`);
+    return (
+      <div
+        key={'slice' + start}
+        style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+        {rules.slice(start, end).map((r, idx) => {
+          const thisPath = [...path, start + idx];
+          const thisPathDisabled =
+            disabled ||
+            (typeof r !== 'string' && r.disabled) ||
+            disabledPaths.some(p => pathsAreEqual(thisPath, p));
+          const key = thisPath.join('-');
+          return (
+            <Fragment key={key}>
+              {idx > 0 && !independentCombinators && showCombinatorsBetweenRules && (
+                <InlineCombinatorControlElement
+                  options={combinators}
+                  value={combinator}
+                  title={translations.combinators.title}
+                  className={classNamesMemo.combinators}
+                  handleOnChange={onCombinatorChange}
+                  rules={rules}
+                  level={level}
+                  context={context}
+                  validation={validationResult}
+                  component={CombinatorSelectorControlElement}
+                  path={thisPath}
+                  disabled={thisPathDisabled}
+                  independentCombinators={independentCombinators}
+                />
+              )}
+              {typeof r === 'string' ? (
+                <InlineCombinatorControlElement
+                  options={combinators}
+                  value={r}
+                  title={translations.combinators.title}
+                  className={classNamesMemo.combinators}
+                  handleOnChange={val => onIndependentCombinatorChange(val, idx)}
+                  rules={rules}
+                  level={level}
+                  context={context}
+                  validation={validationResult}
+                  component={CombinatorSelectorControlElement}
+                  path={thisPath}
+                  disabled={thisPathDisabled}
+                  independentCombinators={independentCombinators}
+                />
+              ) : 'rules' in r ? (
+                <RuleGroupControlElement
+                  id={r.id}
+                  schema={schema}
+                  actions={actions}
+                  path={thisPath}
+                  translations={translations}
+                  ruleGroup={r}
+                  rules={r.rules}
+                  combinator={'combinator' in r ? r.combinator : undefined}
+                  not={!!r.not}
+                  disabled={thisPathDisabled}
+                  parentDisabled={parentDisabled || disabled}
+                  context={context}
+                />
+              ) : (
+                <RuleControlElement
+                  id={r.id!}
+                  rule={r}
+                  field={r.field}
+                  operator={r.operator}
+                  value={r.value}
+                  valueSource={r.valueSource}
+                  schema={schema}
+                  actions={actions}
+                  path={thisPath}
+                  disabled={thisPathDisabled}
+                  parentDisabled={parentDisabled || disabled}
+                  translations={translations}
+                  context={context}
+                  compact={idx > 0}
+                />
+              )}
+            </Fragment>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div
       ref={previewRef}
@@ -292,92 +516,7 @@ export const RuleGroup = ({
           />
         )}
       </div>
-      <div className={classNamesMemo.body}>
-        {rules.map((r, idx) => {
-          const thisPath = [...path, idx];
-          const thisPathDisabled =
-            disabled ||
-            (typeof r !== 'string' && r.disabled) ||
-            disabledPaths.some(p => pathsAreEqual(thisPath, p));
-          const key = thisPath.join('-');
-          const prevR = (idx > 0 && idx < rules.length-1 ) ? rules[idx - 1] : undefined;
-
-          return (
-            <Fragment key={key}>
-              {idx > 0 && !independentCombinators && showCombinatorsBetweenRules && (
-                <InlineCombinatorControlElement
-                  options={combinators}
-                  value={combinator}
-                  title={translations.combinators.title}
-                  className={classNamesMemo.combinators}
-                  handleOnChange={onCombinatorChange}
-                  rules={rules}
-                  level={level}
-                  context={context}
-                  validation={validationResult}
-                  component={CombinatorSelectorControlElement}
-                  path={thisPath}
-                  disabled={thisPathDisabled}
-                  independentCombinators={independentCombinators}
-                />
-              )}
-              {typeof r === 'string' ? (
-                <InlineCombinatorControlElement
-                  options={combinators}
-                  value={r}
-                  title={translations.combinators.title}
-                  className={classNamesMemo.combinators}
-                  handleOnChange={val => onIndependentCombinatorChange(val, idx)}
-                  rules={rules}
-                  level={level}
-                  context={context}
-                  validation={validationResult}
-                  component={CombinatorSelectorControlElement}
-                  path={thisPath}
-                  disabled={thisPathDisabled}
-                  independentCombinators={independentCombinators}
-                />
-              ) : 'rules' in r ? (
-                <RuleGroupControlElement
-                  id={r.id}
-                  schema={schema}
-                  actions={actions}
-                  path={thisPath}
-                  translations={translations}
-                  ruleGroup={r}
-                  rules={r.rules}
-                  combinator={'combinator' in r ? r.combinator : undefined}
-                  not={!!r.not}
-                  disabled={thisPathDisabled}
-                  parentDisabled={parentDisabled || disabled}
-                  context={context}
-                />
-              ) : (
-                <RuleControlElement
-                  id={r.id!}
-                  rule={r}
-                  field={r.field}
-                  operator={r.operator}
-                  value={r.value}
-                  valueSource={r.valueSource}
-                  schema={schema}
-                  actions={actions}
-                  path={thisPath}
-                  disabled={thisPathDisabled}
-                  parentDisabled={parentDisabled || disabled}
-                  translations={translations}
-                  context={context}
-                  compact={
-                    typeof prevR ==='string' || prevR == undefined ? false :
-                    'rules' in prevR  ? false :
-                    prevR.field === r.field && prevR.operator === r.operator 
-                  }
-                />
-              )}
-            </Fragment>
-          );
-        })}
-      </div>
+      <div className={classNamesMemo.body}>{sliceRules()}</div>
     </div>
   );
 };

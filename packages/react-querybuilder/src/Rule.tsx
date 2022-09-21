@@ -151,7 +151,6 @@ export const Rule = ({
   );
 
   return (
-    
     <div
       ref={dndRef}
       data-testid={TestID.rule}
@@ -160,8 +159,7 @@ export const Rule = ({
       className={outerClassName}
       data-rule-id={id}
       data-level={level}
-      data-path={JSON.stringify(path)}
-      style={compact ? {display:'flex',width:'auto'}:{}}>
+      data-path={JSON.stringify(path)}>
       <DragHandleControlElement
         testID={TestID.dragHandle}
         ref={dragRef}
@@ -173,38 +171,42 @@ export const Rule = ({
         disabled={disabled}
         context={context}
         validation={validationResult}
-      />{!compact &&
-      <FieldSelectorControlElement
-        testID={TestID.fields}
-        options={fields}
-        title={translations.fields.title}
-        value={field}
-        operator={operator}
-        className={classNamesMemo.fields}
-        handleOnChange={generateOnChangeHandler('field')}
-        level={level}
-        path={path}
-        disabled={disabled}
-        context={context}
-        validation={validationResult}
-      />}
+      />
+      {!compact && (
+        <FieldSelectorControlElement
+          testID={TestID.fields}
+          options={fields}
+          title={translations.fields.title}
+          value={field}
+          operator={operator}
+          className={classNamesMemo.fields}
+          handleOnChange={generateOnChangeHandler('field')}
+          level={level}
+          path={path}
+          disabled={disabled}
+          context={context}
+          validation={validationResult}
+        />
+      )}
       {(autoSelectField || field !== translations.fields.placeholderName) && (
         <>
-         {!compact && <OperatorSelectorControlElement
-            testID={TestID.operators}
-            field={field}
-            fieldData={fieldData}
-            title={translations.operators.title}
-            options={operators}
-            value={operator}
-            className={classNamesMemo.operators}
-            handleOnChange={generateOnChangeHandler('operator')}
-            level={level}
-            path={path}
-            disabled={disabled}
-            context={context}
-            validation={validationResult}
-          />}
+          {!compact && (
+            <OperatorSelectorControlElement
+              testID={TestID.operators}
+              field={field}
+              fieldData={fieldData}
+              title={translations.operators.title}
+              options={operators}
+              value={operator}
+              className={classNamesMemo.operators}
+              handleOnChange={generateOnChangeHandler('operator')}
+              level={level}
+              path={path}
+              disabled={disabled}
+              context={context}
+              validation={validationResult}
+            />
+          )}
           {(autoSelectOperator || operator !== translations.operators.placeholderName) && (
             <>
               {!['null', 'notNull'].includes(operator) && valueSources.length > 1 && (
@@ -290,7 +292,6 @@ export const Rule = ({
         validation={validationResult}
       />
     </div>
-  
   );
 };
 
