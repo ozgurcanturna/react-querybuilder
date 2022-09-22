@@ -304,7 +304,11 @@ export const RuleGroup = ({
     return (
       <div
         key={'slice' + start}
-        style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+        }}>
         {rules.slice(start, end).map((r, idx) => {
           const thisPath = [...path, start + idx];
           const thisPathDisabled =
