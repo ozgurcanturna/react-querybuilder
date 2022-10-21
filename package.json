@@ -1,6 +1,5 @@
 {
   "name": "docet-react-querybuilder",
-  "private": true,
   "workspaces": [
     "packages/*"
   ],
