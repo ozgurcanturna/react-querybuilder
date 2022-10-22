@@ -1,5 +1,8 @@
 {
-  "name": "docet-react-querybuilder",
+  "dependencies": {
+    "docet-react-qbuilder": "https://github.com/ozgurcanturna/react-querybuilder.git"
+  },
+  "name": "docet-react-qbuilder",
   "version": "0.0.1",
   "workspaces": [
     "packages/*"
